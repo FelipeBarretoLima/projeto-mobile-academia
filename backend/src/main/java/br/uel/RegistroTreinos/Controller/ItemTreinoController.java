@@ -1,18 +1,16 @@
 package br.uel.RegistroTreinos.Controller;
 
 import br.uel.RegistroTreinos.Model.ItemTreino;
-import br.uel.RegistroTreinos.Model.Treino;
 import br.uel.RegistroTreinos.Service.ItemTreinoService;
 import br.uel.RegistroTreinos.Service.TreinoService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/treinos/{treinoId}/itens")
+@RestController
+@RequestMapping("/api/treinos/{treinoId}/itens")
 public class ItemTreinoController {
 
     private final ItemTreinoService itemTreinoService;
@@ -23,65 +21,40 @@ public class ItemTreinoController {
         this.treinoService = treinoService;
     }
 
+    // GET /api/treinos/{treinoId}/itens?busca=texto&direcao=asc|desc
     @GetMapping
-    public String listarPorTreino(@PathVariable Long treinoId, Model model) {
-        Treino treino = treinoService.buscarPorId(treinoId);
-        List<ItemTreino> itens = itemTreinoService.listarPorTreino(treinoId, null, "asc");
-
-        model.addAttribute("treino", treino);
-        model.addAttribute("itens", itens);
-        return "itens/lista";
+    public ResponseEntity<List<ItemTreino>> listar(@PathVariable Long treinoId,
+                                                   @RequestParam(required = false) String busca,
+                                                   @RequestParam(defaultValue = "asc") String direcao) {
+        return ResponseEntity.ok(itemTreinoService.listarPorTreino(treinoId, busca, direcao));
     }
 
-    @GetMapping("/novo")
-    public String novoForm(@PathVariable Long treinoId, Model model) {
-        model.addAttribute("treino", treinoService.buscarPorId(treinoId));
-        model.addAttribute("item", new ItemTreino());
-        return "itens/form";
+    // GET /api/treinos/{treinoId}/itens/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemTreino> buscarPorId(@PathVariable Long treinoId, @PathVariable Long id) {
+        return ResponseEntity.ok(itemTreinoService.buscarPorId(id));
     }
 
+    // POST /api/treinos/{treinoId}/itens
     @PostMapping
-    public String salvar(@PathVariable Long treinoId, @ModelAttribute ItemTreino item,
-                         RedirectAttributes redirectAttributes) {
-        try {
-            item.setTreino(treinoService.buscarPorId(treinoId));
-            itemTreinoService.salvar(item);
-            redirectAttributes.addFlashAttribute("sucesso", "Exercício cadastrado com sucesso!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/treinos/" + treinoId + "/itens";
+    public ResponseEntity<ItemTreino> cadastrar(@PathVariable Long treinoId, @RequestBody ItemTreino item) {
+        item.setTreino(treinoService.buscarPorId(treinoId));
+        ItemTreino salvo = itemTreinoService.salvar(item);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
-    @GetMapping("/{id}/editar")
-    public String editarForm(@PathVariable Long treinoId, @PathVariable Long id, Model model) {
-        model.addAttribute("treino", treinoService.buscarPorId(treinoId));
-        model.addAttribute("item", itemTreinoService.buscarPorId(id));
-        return "itens/form";
+    // PUT /api/treinos/{treinoId}/itens/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<ItemTreino> atualizar(@PathVariable Long treinoId, @PathVariable Long id,
+                                                @RequestBody ItemTreino item) {
+        item.setTreino(treinoService.buscarPorId(treinoId));
+        return ResponseEntity.ok(itemTreinoService.atualizar(id, item));
     }
 
-    @PostMapping("/{id}/editar")
-    public String atualizar(@PathVariable Long treinoId, @PathVariable Long id,
-                            @ModelAttribute ItemTreino item, RedirectAttributes redirectAttributes) {
-
-        Treino treino = treinoService.buscarPorId(treinoId);
-        item.setTreino(treino);
-
-        try {
-            itemTreinoService.atualizar(id, item);
-            redirectAttributes.addFlashAttribute("sucesso", "Exercício atualizado com sucesso!");
-            return "redirect:/treinos/" + treinoId + "/itens";
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/treinos/" + treinoId + "/itens";
-    }
-
-    @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long treinoId, @PathVariable Long id,
-                          RedirectAttributes redirectAttributes) {
+    // DELETE /api/treinos/{treinoId}/itens/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long treinoId, @PathVariable Long id) {
         itemTreinoService.excluir(id);
-        redirectAttributes.addFlashAttribute("sucesso", "Exercício excluído com sucesso!");
-        return "redirect:/treinos/" + treinoId + "/itens";
+        return ResponseEntity.noContent().build();
     }
 }

@@ -2,15 +2,14 @@ package br.uel.RegistroTreinos.Controller;
 
 import br.uel.RegistroTreinos.Model.Usuario;
 import br.uel.RegistroTreinos.Service.UsuarioService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/usuarios")
+@RestController
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -19,65 +18,38 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
+    // GET /api/usuarios?busca=texto -> lista todos ou pesquisa por nome
     @GetMapping
-    public String listar(@RequestParam(required = false) String nome, Model model) {
-        List<Usuario> usuarios = (nome == null || nome.isBlank())
+    public ResponseEntity<List<Usuario>> listar(@RequestParam(required = false) String busca) {
+        List<Usuario> usuarios = (busca == null || busca.isBlank())
                 ? usuarioService.listarTodos()
-                : usuarioService.pesquisarPorNome(nome);
-
-        model.addAttribute("usuarios", usuarios);
-        model.addAttribute("nome", nome);
-        return "usuarios/lista";
+                : usuarioService.pesquisarPorNome(busca.trim());
+        return ResponseEntity.ok(usuarios);
     }
 
-    // Exibe o formulário de cadastro (objeto vazio)
-    @GetMapping("/novo")
-    public String novoForm(Model model) {
-        model.addAttribute("usuario", new Usuario());
-        return "usuarios/form";
+    // GET /api/usuarios/{id} -> busca um usuário
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.buscarPorID(id));
     }
 
-    // Processa o cadastro (POST = criar)
+    // POST /api/usuarios -> cadastra
     @PostMapping
-    public String salvar(@ModelAttribute Usuario usuario, RedirectAttributes redirectAttributes) {
-        try {
-            usuarioService.salvar(usuario);
-            redirectAttributes.addFlashAttribute("sucesso", "Usuário cadastrado com sucesso!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/usuarios";
+    public ResponseEntity<Usuario> cadastrar(@RequestBody Usuario usuario) {
+        Usuario salvo = usuarioService.salvar(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
-    // Exibe o formulário de edição, já preenchido
-    @GetMapping("/{id}/editar")
-    public String editarForm(@PathVariable Long id, Model model) {
-        model.addAttribute("usuario", usuarioService.buscarPorID(id));
-        return "usuarios/form";
+    // PUT /api/usuarios/{id} -> atualiza
+    @PutMapping("/{id}")
+    public ResponseEntity<Usuario> atualizar(@PathVariable Long id, @RequestBody Usuario usuario) {
+        return ResponseEntity.ok(usuarioService.atualizar(id, usuario));
     }
 
-    // Processa a edição (POST = atualizar, sem PUT de verdade)
-    @PostMapping("/{id}/editar")
-    public String atualizar(@PathVariable Long id, @ModelAttribute Usuario usuario,
-                            RedirectAttributes redirectAttributes) {
-        try {
-            usuarioService.atualizar(id, usuario);
-            redirectAttributes.addFlashAttribute("sucesso", "Usuário atualizado com sucesso!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/usuarios";
-    }
-
-    // Processa a exclusão (POST = excluir, sem DELETE de verdade)
-    @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            usuarioService.excluir(id);
-            redirectAttributes.addFlashAttribute("sucesso", "Usuário excluído com sucesso!");
-        } catch (IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/usuarios";
+    // DELETE /api/usuarios/{id} -> exclui
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        usuarioService.excluir(id);
+        return ResponseEntity.noContent().build();
     }
 }

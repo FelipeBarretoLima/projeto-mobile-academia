@@ -1,18 +1,16 @@
 package br.uel.RegistroTreinos.Controller;
 
 import br.uel.RegistroTreinos.Model.Treino;
-import br.uel.RegistroTreinos.Model.Usuario;
 import br.uel.RegistroTreinos.Service.TreinoService;
 import br.uel.RegistroTreinos.Service.UsuarioService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/usuarios/{usuarioId}/treinos")
+@RestController
+@RequestMapping("/api/usuarios/{usuarioId}/treinos")
 public class TreinoController {
 
     private final TreinoService treinoService;
@@ -23,64 +21,40 @@ public class TreinoController {
         this.usuarioService = usuarioService;
     }
 
+    // GET /api/usuarios/{usuarioId}/treinos?busca=texto&direcao=asc|desc
     @GetMapping
-    public String listarPorUsuario(@PathVariable Long usuarioId,
-                                   @RequestParam(defaultValue = "asc") String direcao,
-                                   Model model) {
-        Usuario usuario = usuarioService.buscarPorID(usuarioId);
-        List<Treino> treinos = treinoService.listarPorUsuario(usuarioId, null, direcao);
-
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("treinos", treinos);
-        model.addAttribute("direcao", direcao);
-        return "treinos/lista";
+    public ResponseEntity<List<Treino>> listar(@PathVariable Long usuarioId,
+                                               @RequestParam(required = false) String busca,
+                                               @RequestParam(defaultValue = "asc") String direcao) {
+        return ResponseEntity.ok(treinoService.listarPorUsuario(usuarioId, busca, direcao));
     }
 
-    @GetMapping("/novo")
-    public String novoForm(@PathVariable Long usuarioId, Model model) {
-        model.addAttribute("usuario", usuarioService.buscarPorID(usuarioId));
-        model.addAttribute("treino", new Treino());
-        return "treinos/form";
+    // GET /api/usuarios/{usuarioId}/treinos/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<Treino> buscarPorId(@PathVariable Long usuarioId, @PathVariable Long id) {
+        return ResponseEntity.ok(treinoService.buscarPorId(id));
     }
 
+    // POST /api/usuarios/{usuarioId}/treinos
     @PostMapping
-    public String salvar(@PathVariable Long usuarioId, @ModelAttribute Treino treino,
-                         RedirectAttributes redirectAttributes) {
-        try {
-            treino.setUsuario(usuarioService.buscarPorID(usuarioId));
-            treinoService.salvar(treino);
-            redirectAttributes.addFlashAttribute("sucesso", "Treino cadastrado com sucesso!");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/usuarios/" + usuarioId + "/treinos";
+    public ResponseEntity<Treino> cadastrar(@PathVariable Long usuarioId, @RequestBody Treino treino) {
+        treino.setUsuario(usuarioService.buscarPorID(usuarioId));
+        Treino salvo = treinoService.salvar(treino);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
-    @GetMapping("/{id}/editar")
-    public String editarForm(@PathVariable Long usuarioId, @PathVariable Long id, Model model) {
-        model.addAttribute("usuario", usuarioService.buscarPorID(usuarioId));
-        model.addAttribute("treino", treinoService.buscarPorId(id));
-        return "treinos/form";
+    // PUT /api/usuarios/{usuarioId}/treinos/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Treino> atualizar(@PathVariable Long usuarioId, @PathVariable Long id,
+                                            @RequestBody Treino treino) {
+        treino.setUsuario(usuarioService.buscarPorID(usuarioId));
+        return ResponseEntity.ok(treinoService.atualizar(id, treino));
     }
 
-    @PostMapping("/{id}/editar")
-    public String atualizar(@PathVariable Long usuarioId, @PathVariable Long id,
-                            @ModelAttribute Treino treino, RedirectAttributes redirectAttributes) {
-        try {
-            treino.setUsuario(usuarioService.buscarPorID(usuarioId));
-            treinoService.atualizar(id, treino);
-            redirectAttributes.addFlashAttribute("sucesso", "Treino atualizado com sucesso!");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/usuarios/" + usuarioId + "/treinos";
-    }
-
-    @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long usuarioId, @PathVariable Long id,
-                          RedirectAttributes redirectAttributes) {
+    // DELETE /api/usuarios/{usuarioId}/treinos/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long usuarioId, @PathVariable Long id) {
         treinoService.excluir(id);
-        redirectAttributes.addFlashAttribute("sucesso", "Treino excluído com sucesso!");
-        return "redirect:/usuarios/" + usuarioId + "/treinos";
+        return ResponseEntity.noContent().build();
     }
 }
