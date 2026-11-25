@@ -82,6 +82,7 @@ public class TreinoService {
         treino.setUsuario(usuario);
         treino.setDate(dadosAtualizados.getDate());
         treino.setNomeTreino(dadosAtualizados.getNomeTreino());
+        treino.setObservacoes(dadosAtualizados.getObservacoes());
 
         return treinoRepository.save(treino);
     }
@@ -104,6 +105,9 @@ public class TreinoService {
         }
         if (treino.getNomeTreino() == null || treino.getNomeTreino().isBlank()) {
             throw new IllegalArgumentException("O nome do treino é obrigatório.");
+        }
+        if (treino.getObservacoes() != null && treino.getObservacoes().length() > 255) {
+            throw new IllegalArgumentException("As observações devem ter no máximo 255 caracteres.");
         }
     }
 }

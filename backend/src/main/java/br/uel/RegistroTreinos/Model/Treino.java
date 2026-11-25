@@ -22,8 +22,13 @@ public class Treino {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    // Obrigatórios
     private LocalDate date;
     private String nomeTreino;
+
+    // Opcional
+    @Column(length = 255)
+    private String observacoes;
 
     public Treino() {
     }
