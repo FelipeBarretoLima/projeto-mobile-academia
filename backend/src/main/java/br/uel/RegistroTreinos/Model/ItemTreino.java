@@ -1,7 +1,7 @@
 package br.uel.RegistroTreinos.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +11,13 @@ import java.math.BigDecimal;
 @Table(name = "item_treino")
 @Setter
 @Getter
-
 public class ItemTreino {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "treino_id", nullable = false)
     private Treino treino;
@@ -29,15 +30,14 @@ public class ItemTreino {
 
     private Integer totalSeries;
 
-    public ItemTreino(){
+    public ItemTreino() {
     }
 
-    public ItemTreino(Treino treino, String nomeExercicio, BigDecimal carga, Integer repeticoes, Integer totalSeries){
+    public ItemTreino(Treino treino, String nomeExercicio, BigDecimal carga, Integer repeticoes, Integer totalSeries) {
         this.treino = treino;
         this.nomeExercicio = nomeExercicio;
         this.carga = carga;
         this.repeticoes = repeticoes;
         this.totalSeries = totalSeries;
     }
-
 }
