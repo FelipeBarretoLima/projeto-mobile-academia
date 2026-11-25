@@ -12,17 +12,18 @@ import java.util.List;
 @Repository
 public interface TreinoRepository extends JpaRepository<Treino, Long> {
 
-    // Busca treinos cujo usuário tem o nome contendo o texto (ignora maiúsculas/minúsculas)
-    List<Treino> findByUsuarioNomeContainingIgnoreCase(String nome, Sort sort);
-
-    // Verifica se já existe um treino com esse usuário, data e nome de treino
-    boolean existsByUsuarioAndDateAndNomeTreino(Usuario usuario, LocalDate date, String nomeTreino);
-
-    // Mesma verificação, mas ignorando um id específico (usado na edição, pra não comparar o registro com ele mesmo)
-    boolean existsByUsuarioAndDateAndNomeTreinoAndIdNot(Usuario usuario, LocalDate date, String nomeTreino, Long id);
-
-    // Busca os treinos de um usuário específico, já ordenados conforme o Sort recebido
+    // Lista os treinos de um usuário, ordenados conforme o Sort recebido
     List<Treino> findByUsuarioId(Long usuarioId, Sort sort);
 
+    // Pesquisa os treinos de um usuário pelo nome do treino (ignora maiúsculas/minúsculas)
+    List<Treino> findByUsuarioIdAndNomeTreinoContainingIgnoreCase(Long usuarioId, String nomeTreino, Sort sort);
+
+    // Verifica se já existe um treino com esse usuário, data e nome
+    boolean existsByUsuarioAndDateAndNomeTreino(Usuario usuario, LocalDate date, String nomeTreino);
+
+    // Mesma verificação, ignorando o próprio registro (usado na edição)
+    boolean existsByUsuarioAndDateAndNomeTreinoAndIdNot(Usuario usuario, LocalDate date, String nomeTreino, Long id);
+
+    // Verifica se o usuário possui treinos (impede excluir usuário com treinos)
     boolean existsByUsuarioId(Long usuarioId);
 }

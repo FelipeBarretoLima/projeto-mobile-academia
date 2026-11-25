@@ -26,7 +26,7 @@ public class ItemTreinoController {
     @GetMapping
     public String listarPorTreino(@PathVariable Long treinoId, Model model) {
         Treino treino = treinoService.buscarPorId(treinoId);
-        List<ItemTreino> itens = itemTreinoService.listarPorTreino(treinoId);
+        List<ItemTreino> itens = itemTreinoService.listarPorTreino(treinoId, null, "asc");
 
         model.addAttribute("treino", treino);
         model.addAttribute("itens", itens);

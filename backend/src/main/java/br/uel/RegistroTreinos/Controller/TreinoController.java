@@ -28,7 +28,7 @@ public class TreinoController {
                                    @RequestParam(defaultValue = "asc") String direcao,
                                    Model model) {
         Usuario usuario = usuarioService.buscarPorID(usuarioId);
-        List<Treino> treinos = treinoService.listarPorUsuario(usuarioId, direcao);
+        List<Treino> treinos = treinoService.listarPorUsuario(usuarioId, null, direcao);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("treinos", treinos);

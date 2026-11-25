@@ -5,8 +5,9 @@ import br.uel.RegistroTreinos.Model.Usuario;
 import br.uel.RegistroTreinos.Repository.ItemTreinoRepository;
 import br.uel.RegistroTreinos.Repository.TreinoRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,8 +26,18 @@ public class TreinoService {
         this.usuarioService = usuarioService;
     }
 
-    public List<Treino> listarTodos() {
-        return treinoRepository.findAll();
+    // Lista os treinos de um usuário, com pesquisa opcional por nome e ordenação por data
+    public List<Treino> listarPorUsuario(Long usuarioId, String busca, String direcao) {
+        usuarioService.buscarPorID(usuarioId); // garante que o usuário existe (senão, 404)
+
+        Sort sort = "desc".equalsIgnoreCase(direcao)
+                ? Sort.by("date").descending()
+                : Sort.by("date").ascending();
+
+        if (busca == null || busca.isBlank()) {
+            return treinoRepository.findByUsuarioId(usuarioId, sort);
+        }
+        return treinoRepository.findByUsuarioIdAndNomeTreinoContainingIgnoreCase(usuarioId, busca.trim(), sort);
     }
 
     public Treino buscarPorId(Long id) {
@@ -75,6 +86,8 @@ public class TreinoService {
         return treinoRepository.save(treino);
     }
 
+    // @Transactional: os dois deletes acontecem juntos; se um falhar, nada é apagado
+    @Transactional
     public void excluir(Long id) {
         buscarPorId(id); // garante que existe antes de tentar excluir
 
@@ -92,12 +105,5 @@ public class TreinoService {
         if (treino.getNomeTreino() == null || treino.getNomeTreino().isBlank()) {
             throw new IllegalArgumentException("O nome do treino é obrigatório.");
         }
-    }
-    public List<Treino> listarPorUsuario(Long usuarioId, String direcao) {
-        Sort sort = "desc".equalsIgnoreCase(direcao)
-                ? Sort.by("date").descending()
-                : Sort.by("date").ascending();
-
-        return treinoRepository.findByUsuarioId(usuarioId, sort);
     }
 }

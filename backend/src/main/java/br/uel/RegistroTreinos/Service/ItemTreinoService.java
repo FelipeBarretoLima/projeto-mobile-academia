@@ -4,6 +4,7 @@ import br.uel.RegistroTreinos.Model.ItemTreino;
 import br.uel.RegistroTreinos.Model.Treino;
 import br.uel.RegistroTreinos.Repository.ItemTreinoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,8 +22,18 @@ public class ItemTreinoService {
         this.treinoService = treinoService;
     }
 
-    public List<ItemTreino> listarPorTreino(Long treinoId) {
-        return itemTreinoRepository.findByTreinoId(treinoId);
+    // Lista os exercícios de um treino, com pesquisa opcional por nome e ordenação por nome
+    public List<ItemTreino> listarPorTreino(Long treinoId, String busca, String direcao) {
+        treinoService.buscarPorId(treinoId); // garante que o treino existe (senão, 404)
+
+        Sort sort = "desc".equalsIgnoreCase(direcao)
+                ? Sort.by("nomeExercicio").descending()
+                : Sort.by("nomeExercicio").ascending();
+
+        if (busca == null || busca.isBlank()) {
+            return itemTreinoRepository.findByTreinoId(treinoId, sort);
+        }
+        return itemTreinoRepository.findByTreinoIdAndNomeExercicioContainingIgnoreCase(treinoId, busca.trim(), sort);
     }
 
     public ItemTreino buscarPorId(Long id) {
