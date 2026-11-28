@@ -2,6 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import TreinoListScreen from "./src/screens/TreinoListScreen";
 
 import UsuarioListScreen from "./src/screens/UsuarioListScreen";
 import UsuarioFormScreen from "./src/screens/UsuarioFormScreen";
@@ -28,6 +29,11 @@ export default function App() {
             options={{ title: "Registro de Treinos" }}
           />
           <Stack.Screen name="UsuarioForm" component={UsuarioFormScreen} />
+          <Stack.Screen
+            name="TreinoList"
+            component={TreinoListScreen}
+            options={({ route }) => ({ title: `Treinos · ${route.params.usuario.nome}` })}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

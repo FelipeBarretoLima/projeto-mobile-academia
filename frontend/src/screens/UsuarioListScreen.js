@@ -108,6 +108,7 @@ export default function UsuarioListScreen({ navigation }) {
           renderItem={({ item }) => (
             <UsuarioItem
               usuario={item}
+              onAbrir={() => navigation.navigate("TreinoList", { usuario: item })}
               onEditar={() => navigation.navigate("UsuarioForm", { usuario: item })}
               onExcluir={() => excluir(item)}
             />
