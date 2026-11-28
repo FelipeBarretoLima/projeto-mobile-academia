@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import UsuarioListScreen from "./src/screens/UsuarioListScreen";
+import UsuarioFormScreen from "./src/screens/UsuarioFormScreen";
 import { cores } from "./src/styles/cores";
 
 const Stack = createNativeStackNavigator();
@@ -26,6 +27,7 @@ export default function App() {
             component={UsuarioListScreen}
             options={{ title: "Registro de Treinos" }}
           />
+          <Stack.Screen name="UsuarioForm" component={UsuarioFormScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

@@ -9,13 +9,15 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { api, mensagemDeErro } from "../services/api";
 import { avisar, confirmarExclusao } from "../utils/alerts";
 import UsuarioItem from "../components/UsuarioItem";
 import { cores } from "../styles/cores";
 
 export default function UsuarioListScreen({ navigation }) {
+  const insets = useSafeAreaInsets(); // tamanho das barras do sistema (ex.: botões do Android)
+
   const [usuarios, setUsuarios] = useState([]);
   const [textoBusca, setTextoBusca] = useState(""); // o que está digitado no campo
   const [filtro, setFiltro] = useState("");         // a busca que foi aplicada
@@ -102,7 +104,7 @@ export default function UsuarioListScreen({ navigation }) {
         <FlatList
           data={usuarios}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.lista}
+          contentContainerStyle={[styles.lista, { paddingBottom: insets.bottom + 90 }]}
           renderItem={({ item }) => (
             <UsuarioItem
               usuario={item}
@@ -118,7 +120,10 @@ export default function UsuarioListScreen({ navigation }) {
         />
       )}
 
-      <Pressable style={styles.botaoNovo} onPress={() => navigation.navigate("UsuarioForm")}>
+      <Pressable
+        style={[styles.botaoNovo, { bottom: insets.bottom + 16 }]}
+        onPress={() => navigation.navigate("UsuarioForm")}
+      >
         <Text style={styles.botaoNovoTexto}>+ Novo usuário</Text>
       </Pressable>
     </SafeAreaView>
@@ -178,7 +183,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   lista: {
-    paddingBottom: 90,
+    paddingTop: 2,
   },
   vazio: {
     textAlign: "center",
@@ -189,7 +194,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
     right: 16,
-    bottom: 24,
     backgroundColor: cores.primaria,
     borderRadius: 12,
     paddingVertical: 14,
