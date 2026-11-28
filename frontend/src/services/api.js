@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 // O celular precisa estar no mesmo Wi-Fi que o computador.
-const API_URL = "http://192.168.15.4:8080/api";
+const API_URL = "http://10.32.93.225:8080/api";
 
 export const api = axios.create({
   baseURL: API_URL,
